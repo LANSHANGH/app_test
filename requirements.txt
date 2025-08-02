@@ -9,3 +9,4 @@ pandas         # For data manipulation (dependency of camelot, but good to list 
 
 # OpenAI API interaction
 openai
+datetime
