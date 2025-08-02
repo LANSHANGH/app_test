@@ -1,0 +1,11 @@
+# Web UI and display components
+ipywidgets
+ipython
+
+# PDF and Table processing
+PyMuPDF        # For import fitz
+camelot-py     # For import camelot
+pandas         # For data manipulation (dependency of camelot, but good to list explicitly)
+
+# OpenAI API interaction
+openai
