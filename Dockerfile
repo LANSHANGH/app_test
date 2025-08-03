@@ -1,35 +1,34 @@
-# Dockerfile
+# Dockerfile (自检加强版)
 
-# 步骤1: 基础镜像
+# 1. 基础镜像
 FROM python:3.11-slim-bookworm
 
-# 步骤2: 安装系统依赖
-RUN apt-get update && apt-get install -y ghostscript build-essential && \
-    rm -rf /var/lib/apt/lists/*
+# 2. 安装系统依赖
+# 我们把验证步骤也加在这里
+RUN apt-get update && \
+    apt-get install -y ghostscript build-essential && \
+    rm -rf /var/lib/apt/lists/* && \
+    # 【验证步骤1】: 确认ghostscript的可执行文件(gs)是否存在并且可以被找到
+    which gs && \
+    # 【验证步骤2】: 直接运行gs，看它是否能打印出版本号
+    gs --version
 
-# 【重要修改】: 明确设置PATH环境变量
-# 这会确保Python的子进程能找到像gs (Ghostscript)这样的系统命令
+# 3. 明确设置PATH (保持不变)
 ENV PATH /usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:$PATH
 
-# 步骤3: 设置工作目录
+# 4. 工作目录
 WORKDIR /app
 
-# 步骤4: 复制并安装Python依赖
+# 5. 安装Python依赖
 COPY requirements.txt .
 RUN pip install --upgrade pip && pip install --no-cache-dir -r requirements.txt
 
-# 步骤5: 复制所有项目代码
+# 6. 复制并编译代码
 COPY . .
-
-# 步骤6: 编译核心代码并清理
 RUN python setup.py build_ext --inplace && rm secure_core.py
 
-# 步骤7: 暴露端口
+# 7. 暴露端口
 EXPOSE 10000
 
-# 步骤8: 设置环境变量
-ENV PYTHONUNBUFFERED 1
-
-# 步骤9: 定义容器启动时要执行的命令
-# 【重要修改】: 将 --timeout 的值设为 0，以禁用超时限制
+# 8. 启动命令
 CMD ["gunicorn", "--timeout", "0", "--bind", "0.0.0.0:10000", "app:app"]
