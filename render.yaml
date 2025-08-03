@@ -1,23 +1,10 @@
-# render.yaml
+# render.yaml (修正版)
 
 services:
   - type: web
     name: app-test
-    # 【重要修改】: 声明这是一个Docker环境
-    env: docker 
-    plan: free
-    
-    # 定义构建流程
-    buildCommand: |
-      # 强制重新构建 v2
-      # 1. 更新系统包管理器并安装Ghostscript
-      apt-get update && apt-get install -y ghostscript
-      
-      # 2. 安装Python依赖
-      pip install -r requirements.txt
-      
-      # 3. 编译核心逻辑并清理源代码
-      python setup.py build_ext --inplace && rm secure_core.py
-    
-    # 【重要修改】在启动命令中增加超时参数
-    startCommand: "gunicorn --timeout 120 app:app"
+    env: docker   # 告诉Render使用Dockerfile
+    plan: free    # 或者你需要的付费计划
+    # 当env为docker时，以下所有内容都应该被删除：
+    # buildCommand: ... (删除)
+    # startCommand: ... (删除)
