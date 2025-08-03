@@ -1,18 +1,21 @@
 # requirements.txt
 
+# requirements.txt
+
 # --- Web框架与服务器 ---
 Flask
 gunicorn
 
-# --- 核心逻辑编译 ---
+# --- 核心逻辑编译与构建工具 ---
 Cython
+setuptools  # <-- 【重要】添加这一行
 
 # --- 大模型API调用 ---
 openai
 
 # --- PDF内容与表格提取 ---
-PyMuPDF     # 用于 fitz
-camelot-py[cv]  # 用于 camelot。"[cv]"会额外安装OpenCV等依赖，确保表格识别能力
+PyMuPDF
+camelot-py[cv]
 
 # --- 数据处理 ---
-pandas      # Camelot和您的代码逻辑可能依赖它
+pandas
