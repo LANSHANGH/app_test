@@ -1,0 +1,24 @@
+# render.yaml
+
+services:
+  - type: web
+    name: app-test # 你的服务名称
+    env: python
+    plan: free # 注意免费计划的内存限制
+    
+    # 定义构建过程
+    buildCommand: |
+      # 1. 更新包列表并安装系统依赖
+      apt-get update && apt-get install -y ghostscript
+      
+      # 2. 安装Python依赖
+      pip install -r requirements.txt
+      
+      # 3. 编译你的核心逻辑并清理源文件
+      python setup.py build_ext --inplace && rm secure_core.py
+    
+    # 定义启动命令
+    startCommand: "gunicorn app:app"
+    
+    # 健康检查 (可选但推荐)
+    healthCheckPath: /
