@@ -1,12 +1,18 @@
-# Web UI and display components
-ipywidgets
-ipython
+# requirements.txt
 
-# PDF and Table processing
-PyMuPDF        # For import fitz
-camelot-py     # For import camelot
-pandas         # For data manipulation (dependency of camelot, but good to list explicitly)
+# --- Web框架与服务器 ---
+Flask
+gunicorn
 
-# OpenAI API interaction
+# --- 核心逻辑编译 ---
+Cython
+
+# --- 大模型API调用 ---
 openai
-datetime
+
+# --- PDF内容与表格提取 ---
+PyMuPDF     # 用于 fitz
+camelot-py[cv]  # 用于 camelot。"[cv]"会额外安装OpenCV等依赖，确保表格识别能力
+
+# --- 数据处理 ---
+pandas      # Camelot和您的代码逻辑可能依赖它
