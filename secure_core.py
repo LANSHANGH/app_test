@@ -21,6 +21,28 @@ import pandas as pd
 from typing import List, Dict, Any
 import re
 # --- 全局自适应参数 ---
+# ==============================================================================
+# 【终极修复】: 在Python运行时强制设置PATH环境变量
+# ==============================================================================
+# Linux系统中，通过apt-get安装的程序通常都在这些路径下
+standard_paths = [
+    '/usr/local/sbin',
+    '/usr/local/bin',
+    '/usr/sbin',
+    '/usr/bin',
+    '/sbin',
+    '/bin'
+]
+# 获取当前的PATH，如果不存在则为空
+current_path = os.environ.get('PATH', '')
+# 将标准路径添加到当前PATH的前面，确保它们被优先搜索
+# 使用set来避免重复路径
+new_path_parts = list(dict.fromkeys(standard_paths + current_path.split(os.pathsep)))
+new_path = os.pathsep.join(new_path_parts)
+os.environ['PATH'] = new_path
+
+# 打印出最终的PATH，用于在Render日志中进行调试验证
+print(f"DEBUG: Python runtime PATH set to: {os.environ['PATH']}")
 
 
 TITLE_KEYWORDS = ['表', '附表', '图', '表格', '列表', '一览表', 'Table', 'Fig', 'Figure', 'Chart', 'List']
