@@ -2,23 +2,21 @@
 
 services:
   - type: web
-    name: app-test # 你的服务名称
+    name: app-test
     env: python
-    plan: free # 注意免费计划的内存限制
+    plan: free
     
-    # 定义构建过程
+    # 定义构建流程
     buildCommand: |
-      # 1. 更新包列表并安装系统依赖
+      # 强制重新构建 v2
+      # 1. 更新系统包管理器并安装Ghostscript
       apt-get update && apt-get install -y ghostscript
       
       # 2. 安装Python依赖
       pip install -r requirements.txt
       
-      # 3. 编译你的核心逻辑并清理源文件
+      # 3. 编译核心逻辑并清理源代码
       python setup.py build_ext --inplace && rm secure_core.py
     
-    # 定义启动命令
+    # 启动应用的命令
     startCommand: "gunicorn app:app"
-    
-    # 健康检查 (可选但推荐)
-    healthCheckPath: /
