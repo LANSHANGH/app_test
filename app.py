@@ -4,6 +4,60 @@ import os
 from flask import Flask, render_template, request, jsonify
 import tempfile # <--- 导入tempfile库
 import secure_core
+import shutil
+import subprocess
+
+def check_ghostscript():
+    """
+    检查 Ghostscript 是否已安装，并打印其版本信息。
+    """
+    print("正在检查 Ghostscript 是否已安装...")
+
+    # Ghostscript 的可执行文件名在不同操作系统上可能不同
+    # Windows: gswin64c.exe 或 gswin32c.exe
+    # Linux/macOS: gs
+    # shutil.which 会在系统的 PATH 中查找这些命令
+    gs_executable = shutil.which('gs') or shutil.which('gswin64c') or shutil.which('gswin32c')
+
+    if gs_executable is None:
+        # 如果 shutil.which 返回 None，说明在 PATH 中找不到任何一个可执行文件
+        print("\n[错误] Ghostscript 未安装，或其安装路径未添加到系统的 PATH 环境变量中。")
+        print("请参考这里的说明进行安装: https://camelot-py.readthedocs.io/en/latest/user/install-deps.html")
+        return False
+    
+    try:
+        # 如果找到了可执行文件，尝试运行它并获取版本号 (-v 参数)
+        # 使用 subprocess.run 来执行命令
+        result = subprocess.run(
+            [gs_executable, '-v'],
+            capture_output=True, # 捕获命令的标准输出和标准错误
+            text=True,           # 将输出解码为文本
+            check=True           # 如果命令返回非零退出码（表示错误），则抛出 CalledProcessError
+        )
+        
+        # 如果命令成功执行，打印成功信息和版本详情
+        print("\n[成功] Ghostscript 已安装完成！")
+        print(f"可执行文件路径: {gs_executable}")
+        print("版本信息:")
+        # Ghostscript 的版本信息通常在标准输出的第一行
+        print(result.stdout.splitlines()[0])
+        return True
+
+    except FileNotFoundError:
+        # 这是一个备用检查，虽然 shutil.which 已经处理了大部分情况
+        print("\n[错误] 无法找到 Ghostscript 可执行文件。")
+        return False
+    except subprocess.CalledProcessError as e:
+        # 如果 gs -v 命令执行失败
+        print(f"\n[错误] 调用 Ghostscript 时发生错误: {e}")
+        print(f"标准输出:\n{e.stdout}")
+        print(f"标准错误:\n{e.stderr}")
+        return False
+    except Exception as e:
+        # 捕获其他未知异常
+        print(f"\n[错误] 发生未知错误: {e}")
+        return False
+check_ghostscript()
 
 app = Flask(__name__)
 
