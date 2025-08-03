@@ -13,8 +13,7 @@ from datetime import datetime
 # 当部署后，Python会找到 secure_core.so 并从中导入
 import secure_core 
 # =========================================================================
-# 从环境变量加载后台默认配置
-DEFAULT_SYSTEM_PROMPT = os.environ.get('DEFAULT_SYSTEM_PROMPT', "这是一个备用提示词，以防环境变量未设置。")
+
 
 
 # -------------------------------------------------------------------
