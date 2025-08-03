@@ -1,23 +1,12 @@
-# app.py
+# app.py (修正版)
 
 import os
 from flask import Flask, render_template, request, jsonify
-from datetime import datetime
 
 # -------------------------------------------------------------------
-# 1. 将您所有的核心逻辑函数粘贴到这里
-#    这些函数与框架无关，可以直接复用
-# -------------------------------------------------------------------
-# =========================================================================
-# 【核心变化】: 从编译后的模块导入函数，而不是在本地定义它们
-# 当部署后，Python会找到 secure_core.so 并从中导入
+# 【核心变化】: 从编译后的模块导入函数
+# 我们的所有核心逻辑都封装在这个模块里
 import secure_core 
-# =========================================================================
-
-
-
-# -------------------------------------------------------------------
-# 2. 创建Flask应用
 # -------------------------------------------------------------------
 
 app = Flask(__name__)
@@ -29,54 +18,48 @@ def index():
 
 @app.route('/analyze', methods=['POST'])
 def analyze():
-    """
-    处理分析请求的API端点。这替代了所有的on_click事件处理。
-    """
-    # a. 验证输入
-    if 'pdfFile' not in request.files:
-        return jsonify({'error': '未找到上传的文件。'}), 400
+    """处理分析请求的API端点"""
     
-    file = request.files['pdfFile']
-    api_key = request.form.get('apiKey')
-    custom_prompt = request.form.get('prompt')
-
-    if file.filename == '':
+    # a. 验证输入
+    if 'pdfFile' not in request.files or not request.files['pdfFile'].filename:
         return jsonify({'error': '请选择一个文件。'}), 400
+    
+    api_key = request.form.get('apiKey')
     if not api_key:
         return jsonify({'error': 'API Key是必需的。'}), 400
 
-    # b. 决定使用哪个提示词
-    final_system_prompt = custom_prompt if custom_prompt else DEFAULT_SYSTEM_PROMPT
-    if not final_system_prompt:
-        # 这是一个服务器配置错误
-        return jsonify({'error': '服务器默认提示词丢失，请联系管理员。'}), 500
+    custom_prompt = request.form.get('prompt')
+    file = request.files['pdfFile']
 
     try:
-        # c. 执行核心逻辑
-        pdf_content_bytes = file.read() # 直接在内存中读取文件内容
-        markdown_list = process_pdf_to_markdown_list(pdf_content_bytes)
+        # b. 执行核心逻辑
+        pdf_content_bytes = file.read()
+        
+        # 【修正 #1】: 通过 secure_core 模块来调用函数
+        markdown_list = secure_core.process_pdf_to_markdown_list(pdf_content_bytes)
 
         if not markdown_list:
             return jsonify({'result': '处理完成：在PDF中未能找到可供分析的表格。'})
 
-        final_result = analyze_tables_with_doubao(
+        # 【修正 #2】: 通过 secure_core 模块来调用函数
+        # 我们把 custom_prompt 传递给核心模块，
+        # 让模块内部自己去判断是用 custom_prompt 还是用它内部的 DEFAULT_SYSTEM_PROMPT
+        final_result = secure_core.analyze_tables_with_doubao(
             tables_data_list=markdown_list,
             ark_api_key=api_key,
-            system_prompt=final_system_prompt
+            system_prompt=custom_prompt  # 即使custom_prompt是空字符串或None，也直接传过去
         )
         
-        # d. 返回成功结果
+        # c. 返回成功结果
         return jsonify({'result': final_result})
 
     except Exception as e:
-        # e. 处理未知错误
-        print(f"发生未知错误: {e}")
-        # from openai import AuthenticationError
-        # if isinstance(e, AuthenticationError):
-        #     return jsonify({'error': '认证失败：您提供的API Key无效或已过期。'}), 401
-        return jsonify({'error': '服务器处理时发生未知错误，请检查您的文件或联系管理员。'}), 500
+        # d. 处理未知错误
+        # 打印到后端日志，方便调试
+        print(f"在 /analyze 路由中发生错误: {e}") 
+        # 返回给前端一个通用的、安全的信息
+        return jsonify({'error': '服务器在处理您的请求时发生内部错误，请稍后重试或联系管理员。'}), 500
 
 if __name__ == '__main__':
-    # 这只在本地开发时运行
-    # Render会使用Gunicorn来启动应用
+    # 本地开发设置
     app.run(host='0.0.0.0', port=5001, debug=True)
