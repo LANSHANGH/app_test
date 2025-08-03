@@ -18,5 +18,5 @@ services:
       # 3. 编译核心逻辑并清理源代码
       python setup.py build_ext --inplace && rm secure_core.py
     
-    # 启动应用的命令
-    startCommand: "gunicorn app:app"
+    # 【重要修改】在启动命令中增加超时参数
+    startCommand: "gunicorn --timeout 120 app:app"
