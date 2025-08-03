@@ -1,0 +1,118 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能PDF表格校验工具</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; max-width: 800px; margin: 40px auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        h3 { text-align: center; color: #333; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; color: #555; }
+        input[type="text"], input[type="password"], input[type="file"] { width: calc(100% - 20px); padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 16px; }
+        button { background-color: #28a745; color: white; padding: 12px 20px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; width: 100%; transition: background-color 0.3s; }
+        button:disabled { background-color: #aaa; cursor: not-allowed; }
+        button:hover:not(:disabled) { background-color: #218838; }
+        #output-area { white-space: pre-wrap; background-color: #f8f9fa; padding: 15px; border: 1px solid #e9ecef; border-radius: 5px; margin-top: 20px; min-height: 150px; font-family: "Courier New", Courier, monospace; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+    <h3>智能PDF表格校验工具</h3>
+
+    <form id="analysis-form">
+        <div class="form-group">
+            <label for="pdf-file">1. 选择PDF文件</label>
+            <input type="file" id="pdf-file" name="pdfFile" accept=".pdf" required>
+        </div>
+
+        <div class="form-group">
+            <label for="api-key">2. 输入您的方舟(Ark) API Key (必需)</label>
+            <input type="password" id="api-key" name="apiKey" placeholder="您的API Key将用于本次分析" required>
+        </div>
+
+        <div class="form-group">
+            <label for="custom-prompt">3. 自定义提示词 (可选)</label>
+            <input type="text" id="custom-prompt" name="prompt" placeholder="留空则使用内置的详细表格校验规则">
+        </div>
+
+        <button type="submit" id="submit-button">执行分析</button>
+    </form>
+
+    <div id="output-container" class="form-group">
+        <label>分析输出:</label>
+        <textarea id="output-area" readonly rows="15" placeholder="分析过程和结果将显示在这里..."></textarea>
+    </div>
+    
+    <button id="download-button" class="hidden">下载分析结果 (.txt)</button>
+
+<script>
+    const form = document.getElementById('analysis-form');
+    const submitButton = document.getElementById('submit-button');
+    const outputArea = document.getElementById('output-area');
+    const downloadButton = document.getElementById('download-button');
+    let lastResult = '';
+
+    form.addEventListener('submit', async function(event) {
+        event.preventDefault(); // 阻止页面刷新
+
+        // 复刻确认对话框
+        const isConfirmed = confirm("请确认执行。\n此操作将使用您提供的API Key进行调用，并可能产生费用。");
+        if (!isConfirmed) {
+            outputArea.value = "操作已取消。";
+            return;
+        }
+
+        // 禁用按钮并显示加载状态
+        submitButton.disabled = true;
+        submitButton.textContent = '正在分析中...';
+        outputArea.value = "状态：已确认，正在上传并处理文件...\n";
+        downloadButton.classList.add('hidden');
+
+        const formData = new FormData(form);
+
+        try {
+            const response = await fetch('/analyze', {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                outputArea.value = data.result;
+                lastResult = data.result; // 保存结果以供下载
+                downloadButton.classList.remove('hidden'); // 显示下载按钮
+            } else {
+                outputArea.value = `错误 [${response.status}]: ${data.error}`;
+            }
+
+        } catch (error) {
+            outputArea.value = `客户端请求错误: ${error}`;
+        } finally {
+            // 恢复按钮状态
+            submitButton.disabled = false;
+            submitButton.textContent = '执行分析';
+        }
+    });
+
+    // 复刻保存到文件的功能
+    downloadButton.addEventListener('click', function() {
+        if (!lastResult) return;
+        const blob = new Blob([lastResult], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+        a.download = `分析结果_${timestamp}.txt`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    });
+</script>
+
+</body>
+</html>
