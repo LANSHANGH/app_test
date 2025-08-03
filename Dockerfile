@@ -30,5 +30,6 @@ EXPOSE 10000
 # 步骤8: 设置环境变量
 ENV PYTHONUNBUFFERED 1
 
-# 步骤9: 定义启动命令
-CMD ["gunicorn", "--timeout", "120", "--bind", "0.0.0.0:10000", "app:app"]
+# 步骤9: 定义容器启动时要执行的命令
+# 【重要修改】: 将 --timeout 的值设为 0，以禁用超时限制
+CMD ["gunicorn", "--timeout", "0", "--bind", "0.0.0.0:10000", "app:app"]
