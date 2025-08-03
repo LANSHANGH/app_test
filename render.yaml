@@ -3,7 +3,8 @@
 services:
   - type: web
     name: app-test
-    env: python
+    # 【重要修改】: 声明这是一个Docker环境
+    env: docker 
     plan: free
     
     # 定义构建流程
