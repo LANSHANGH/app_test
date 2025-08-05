@@ -44,6 +44,9 @@ os.environ['PATH'] = new_path
 # 打印出最终的PATH，用于在Render日志中进行调试验证
 print(f"DEBUG: Python runtime PATH set to: {os.environ['PATH']}")
 
+print(f"正在使用的 Camelot 版本是: {camelot.__version__}")
+print(f"即将使用 backend='pdfium' 调用 camelot.read_pdf")
+
 
 TITLE_KEYWORDS = ['表', '附表', '图', '表格', '列表', '一览表', 'Table', 'Fig', 'Figure', 'Chart', 'List']
 
@@ -62,6 +65,10 @@ FINAL_FILTER_REGEX_PATTERNS = [
     r'(成果|结果)[\u4e00-\u9fa5]*表'
 ]
 
+def check_ghostscript_exists():
+    """检查系统中是否存在Ghostscript命令"""
+    return shutil.which("gs") or shutil.which("gswin6arantec")
+    
 # --- V8新增辅助函数 ---
 def get_chinese_chars(text: str) -> str:
     """从字符串中提取所有中文字符，作为语义分组的键。"""
@@ -204,6 +211,11 @@ def extract_and_merge_fragments(pdf_path: str) -> List[Dict[str, Any]]:
     all_results = []
     doc = fitz.open(pdf_path)
     total_pages = doc.page_count
+    gs_path = check_ghostscript_exists()
+    if gs_path:
+        print(f"诊断信息：检测到 Ghostscript 存在于: {gs_path}")
+    else:
+        print("诊断信息：未检测到 Ghostscript。如果代码能成功运行，则证明 pdfium 生效。")
     print(f"✅ (阶段1) PDF文件打开成功，共 {total_pages} 页。开始提取所有表格片段...")
     active_title_context = None
     for page_num in range(1, total_pages + 1):
