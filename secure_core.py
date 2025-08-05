@@ -240,9 +240,9 @@ def extract_and_merge_fragments(pdf_path: str) -> List[Dict[str, Any]]:
         print(f"\n{'='*20} 正在提取第 {page_num} / {total_pages} 页 {'='*20}")
         page_fitz = doc.load_page(page_num - 1)
         try:
-            tables_on_page = camelot.read_pdf(pdf_path, pages=str(page_num), flavor='lattice')
+            tables_on_page = camelot.read_pdf(pdf_path, pages=str(page_num), flavor='lattice',backend="pdfium")
             if tables_on_page.n == 0:
-                tables_on_page = camelot.read_pdf(pdf_path, pages=str(page_num), flavor='stream')
+                tables_on_page = camelot.read_pdf(pdf_path, pages=str(page_num), flavor='stream',backend="pdfium")
         except Exception as e:
             print(f"  -- Camelot 在本页提取时出错: {e}, 跳过。")
             continue
