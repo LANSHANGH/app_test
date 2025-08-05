@@ -16,6 +16,7 @@ openai
 # --- PDF内容与表格提取 ---
 PyMuPDF
 camelot-py[cv]
+pdfium
 
 # --- 数据处理 ---
 pandas
