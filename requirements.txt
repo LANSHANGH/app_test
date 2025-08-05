@@ -14,9 +14,10 @@ setuptools  # <-- 【重要】添加这一行
 openai
 
 # --- PDF内容与表格提取 ---
+# --- PDF内容与表格提取 ---
 PyMuPDF
 camelot-py[cv]
-pdfium
+pypdfium2
 
 # --- 数据处理 ---
 pandas
