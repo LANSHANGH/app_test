@@ -20,6 +20,8 @@ import camelot, fitz
 import pandas as pd
 from typing import List, Dict, Any
 import re
+# 在这里加上
+import shutil
 # --- 全局自适应参数 ---
 # ==============================================================================
 # 【终极修复】: 在Python运行时强制设置PATH环境变量
