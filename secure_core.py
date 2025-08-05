@@ -201,36 +201,6 @@ def find_title_with_limited_lookback(
 
 def extract_and_merge_fragments(pdf_path: str) -> List[Dict[str, Any]]:
     # ... V7.1的完整代码 ...
-    """
-    all_results = []
-    doc = fitz.open(pdf_path)
-    total_pages = doc.page_count
-    print(f"✅ (阶段1) PDF文件打开成功，共 {total_pages} 页。开始提取所有表格片段...")
-    active_title_context = None
-    for page_num in range(1, total_pages + 1):
-        page_fitz = doc.load_page(page_num - 1)
-        try:
-            tables_on_page = camelot.read_pdf(pdf_path, pages=str(page_num), flavor='lattice')
-            if tables_on_page.n == 0: tables_on_page = camelot.read_pdf(pdf_path, pages=str(page_num), flavor='stream')
-        except Exception: continue
-        search_boundary_top = active_title_context['bbox'][3] if active_title_context and active_title_context.get('page') != page_num else 0
-        active_title_context = None
-        sorted_tables = sorted(tables_on_page, key=lambda t: t._bbox[3], reverse=True)
-        for table in sorted_tables:
-            table_bbox_fitz = (table._bbox[0], page_fitz.rect.height - table._bbox[3], table._bbox[2], page_fitz.rect.height - table._bbox[1])
-            title_on_this_page = find_title_on_page_in_boundary(page_fitz, table_bbox_fitz[1], search_boundary_top)
-            if title_on_this_page:
-                active_title_context = {**title_on_this_page, 'page': page_num}
-            final_title_context = title_on_this_page
-            structured_info, other_info = [], []
-            if final_title_context:
-                metadata_zone = (0, final_title_context['bbox'][3], page_fitz.rect.width, table_bbox_fitz[1])
-                structured_info, other_info = classify_context_lines(page_fitz, metadata_zone)
-            result = {"page": page_num,"table_name": final_title_context['text'] if final_title_context else "N/A (未关联)","structured_context": structured_info or None,"other_context": other_info or None,"table_dataframe": table.df}
-            all_results.append(result)
-            search_boundary_top = table_bbox_fitz[3]
-    doc.close()
-    """
     all_results = []
     doc = fitz.open(pdf_path)
     total_pages = doc.page_count
